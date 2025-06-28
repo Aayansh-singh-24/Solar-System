@@ -3,82 +3,195 @@
 #include<GLFW/glfw3.h>
 #include"Shader.h"
 
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 aColor;\n"
-"layout (location = 2) in vec2 aTex;\n"
+const char* SunVertex = R"(
+#version 330 core
+layout (location = 0) in vec3 aPos;
 
 
-"out vec3 OurColor;\n"
-"out vec2 TexCoords;\n"
-"uniform mat4 model;\n"
-"uniform mat4 view;\n"
-"uniform mat4 projection;\n"
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
-"void main()\n"
-"{\n"
-"		 OurColor = aColor;\n"
-"        gl_Position = projection * view * model * vec4(aPos,1.0f);\n"
-"		 TexCoords = aTex;\n"
+void main()
+{
+         gl_Position = projection * view * model * vec4(aPos,1.0f);
+}
+)";
 
-"}\0";
+const char*  SunFragment= R"(
+#version 330 core
 
-const char* fragmentShaderSource = "#version 330 core\n"
-
-"out vec4 FragColor;\n"
-"in vec3 OurColor;\n"
-"in vec2 TexCoords;\n"
-"uniform sampler2D texture1;\n"
-"uniform sampler2D texture2;\n"
+out vec4 FragColor;
 
 
-"void main()\n"
-"{\n"
-"		FragColor = vec4(0.4f , 0.5, 0.23, 1.0f);\n"
-"}\n\0";
+void main()
+{
+		FragColor = vec4(1.0f);
+}
+)";
+
+const char* PlanetVertex = R"(
+#version 330 core
+
+layout(location=0) in vec3 aPos;
+layout(location=1) in vec3 aNormal;
+
+out vec3 FragPos;
+out vec3 Normal;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main()
+{
+
+	FragPos = vec3(model * vec4(aPos,1));
+	Normal = mat3(transpose(inverse(model))) * aNormal;
+	gl_Position = projection * view * model * vec4(aPos,1);
+
+}
+)";
+
+const char* PlanetFragment = R"(
+#version 330 core
+
+struct Material {
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	float shininess;
+};
+
+struct Light {
+	vec3 Position;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+in vec3 FragPos;
+in vec3 Normal;
+
+uniform Material material;
+uniform Light light;
+uniform vec3 viewPos;
+
+out vec4 FragColor;
+
+void main()
+{
+	// Ambient
+	vec3 ambient = light.ambient * material.ambient;
+
+	// Diffuse
+	vec3 norm = normalize(Normal);
+	vec3 lightDir = normalize(light.Position - FragPos);
+	float diff = max(dot(norm, lightDir), 0.0);
+	vec3 diffuse = diff * light.diffuse * material.diffuse;
+
+	// Specular
+	vec3 viewDir = normalize(viewPos - FragPos);
+	vec3 reflectDir = reflect(-lightDir, norm);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	vec3 specular = spec * light.specular * material.specular;
+
+	// Final color
+	vec3 result = ambient + diffuse + specular;
+	FragColor = vec4(result, 1.0);
+}
+
+)";
 
 
-unsigned int ShaderCompilation(){
+//<-------------------------------------------------------------------------SUN-------------------------------------------------------->
+unsigned int SunShaderCompilation(){
 	//Shader-Compilation:--
-	unsigned int VertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(VertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(VertexShader);
+	unsigned int SunVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(SunVertexShader, 1, &SunVertex, NULL);
+	glCompileShader(SunVertexShader);
 
-	unsigned int FragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(FragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(FragmentShader);
+	unsigned int SunFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(SunFragmentShader, 1, &SunFragment, NULL);
+	glCompileShader(SunFragmentShader);
 
 	// Compilation-Check
 	int success{};
 	char infolog[100];
 
 	// For vertex Shader
-	glGetShaderiv(VertexShader, GL_COMPILE_STATUS, &success); // check if shader is compile successfully then store 1 in "success".
+	glGetShaderiv(SunVertexShader, GL_COMPILE_STATUS, &success); // check if shader is compile successfully then store 1 in "success".
 	if (!success)
 	{
-		glGetShaderInfoLog(VertexShader, 512, NULL, infolog); // store the error massages in infolog.
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION" << std::endl;
+		glGetShaderInfoLog(SunVertexShader, 512, NULL, infolog); // store the error massages in infolog.
+		std::cout << "ERROR::SUN_SHADER::VERTEX::COMPILATION" << std::endl;
 		std::cout << infolog << std::endl;
 	}
 
 	// for vertex Shader
-	glGetShaderiv(FragmentShader, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(SunFragmentShader, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
-		glGetShaderInfoLog(FragmentShader, 512, NULL, infolog); // store the error massages in infolog.
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION" << std::endl;
+		glGetShaderInfoLog(SunFragmentShader, 512, NULL, infolog); // store the error massages in infolog.
+		std::cout << "ERROR::SUN_SHADER::FRAGMENT::COMPILATION" << std::endl;
 		std::cout << infolog << std::endl;
 	}
 
 	// Linling shaders
-	unsigned ShaderProgram = glCreateProgram();
-	glAttachShader(ShaderProgram, VertexShader);
-	glAttachShader(ShaderProgram, FragmentShader);
-	glLinkProgram(ShaderProgram);
+	unsigned SunShaderProgram = glCreateProgram();
+	glAttachShader(SunShaderProgram, SunVertexShader);
+	glAttachShader(SunShaderProgram, SunFragmentShader);
+	glLinkProgram(SunShaderProgram);
 
 	// Delete the shaders
-	glDeleteShader(VertexShader);
-	glDeleteShader(FragmentShader);
+	glDeleteShader(SunVertexShader);
+	glDeleteShader(SunFragmentShader);
 
-	return ShaderProgram;
+	return SunShaderProgram;
+}
+
+//<--------------------------------------------------------------------------PLANET-------------------------------------------------------->
+unsigned int PalnetShaderCompilation() {
+	//Shader-Compilation:--
+	unsigned int PlanetVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(PlanetVertexShader, 1, &PlanetVertex, NULL);
+	glCompileShader(PlanetVertexShader);
+
+	unsigned int PlanetFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(PlanetFragmentShader, 1, &PlanetFragment, NULL);
+	glCompileShader(PlanetFragmentShader);
+
+	// Compilation-Check
+	int success{};
+	char infolog[100];
+
+	// For vertex Shader
+	glGetShaderiv(PlanetVertexShader, GL_COMPILE_STATUS, &success); // check if shader is compile successfully then store 1 in "success".
+	if (!success)
+	{
+		glGetShaderInfoLog(PlanetVertexShader, 512, NULL, infolog); // store the error massages in infolog.
+		std::cout << "ERROR::PLANET_SHADER::VERTEX::COMPILATION" << std::endl;
+		std::cout << infolog << std::endl;
+	}
+
+	// for vertex Shader
+	glGetShaderiv(PlanetFragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(PlanetFragmentShader, 512, NULL, infolog); // store the error massages in infolog.
+		std::cout << "ERROR::PLANET_SHADER::FRAGMENT::COMPILATION" << std::endl;
+		std::cout << infolog << std::endl;
+	}
+
+	// Linling shaders
+	unsigned PlanetShaderProgram = glCreateProgram();
+	glAttachShader(PlanetShaderProgram, PlanetVertexShader);
+	glAttachShader(PlanetShaderProgram, PlanetFragmentShader);
+	glLinkProgram(PlanetShaderProgram);
+
+	// Delete the shaders
+	glDeleteShader(PlanetVertexShader);
+	glDeleteShader(PlanetFragmentShader);
+
+	return PlanetShaderProgram;
 }

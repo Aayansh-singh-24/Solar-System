@@ -2,6 +2,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-unsigned int ShaderCompilation();
+unsigned int SunShaderCompilation();
+unsigned int PalnetShaderCompilation();
 
 #endif // !SHADER_H
