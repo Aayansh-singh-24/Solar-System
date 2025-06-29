@@ -9,6 +9,7 @@
 
 #include"Shader.h"
 #include"Movement.h"
+#include"model.h"
 
 
 int width = 900;
@@ -134,6 +135,7 @@ int main() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	std::vector<Mesh> myModel = LoadModel("D:/GL/Models/dummy_model.obj");
 
 	float lastFrame = 0.0f;
 	while (!glfwWindowShouldClose(window))
@@ -201,8 +203,13 @@ int main() {
 		glUniformMatrix4fv(PlanetProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		// Draw Planet
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for (size_t i = 0; i < myModel.size(); i++)
+		{
+			Mesh& mesh = myModel[i];
+			glBindVertexArray(mesh.VAO);
+			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+		}
 
 		glUseProgram(PlanetunShaderProgram);
 		glUniform3fv(glad_glGetUniformLocation(PlanetunShaderProgram, "light.position"), 1, glm::value_ptr(lightPos));
@@ -226,8 +233,13 @@ int main() {
 		glUniformMatrix4fv(SunProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		//Draw Object:
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		for (size_t i = 0; i < myModel.size(); i++)
+		{
+			Mesh& mesh = myModel[i];
+			glBindVertexArray(mesh.VAO);
+			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+		}
 
 
 		glfwPollEvents();
