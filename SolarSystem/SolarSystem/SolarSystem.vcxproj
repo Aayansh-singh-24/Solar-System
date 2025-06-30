@@ -138,12 +138,14 @@
     <ClCompile Include="model.cpp" />
     <ClCompile Include="Movement.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="skybox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="Movement.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="skybox.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

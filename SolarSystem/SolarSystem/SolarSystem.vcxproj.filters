@@ -28,6 +28,9 @@
     <Filter Include="src\Model">
       <UniqueIdentifier>{040ed4f9-8133-4f23-aadc-0b8f0172d2e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\SkyBox">
+      <UniqueIdentifier>{3fac1114-2d94-4bab-910b-ff21a1a798fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -45,6 +48,9 @@
     <ClCompile Include="model.cpp">
       <Filter>src\Model</Filter>
     </ClCompile>
+    <ClCompile Include="skybox.cpp">
+      <Filter>src\SkyBox</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header.h">
@@ -58,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="model.h">
       <Filter>src\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="skybox.h">
+      <Filter>src\SkyBox</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
