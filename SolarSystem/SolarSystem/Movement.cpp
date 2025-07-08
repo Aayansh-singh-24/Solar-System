@@ -47,6 +47,8 @@ float lastY = 900.0f / 2.0f;
 
 void Mouse_Callback(GLFWwindow* window,double Xpos, double Ypos)
 {
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
+        return;
     if (firstmouse)
     {
         lastX = Xpos;

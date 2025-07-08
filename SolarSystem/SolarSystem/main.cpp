@@ -43,7 +43,7 @@ int main() {
 	//<-----------------------------CallBacks----------------------------------------------->
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, Mouse_Callback);
 
 
@@ -81,12 +81,12 @@ int main() {
 	//------------------------------------------------------------SkyBox-Loading-------------------------------------------------->
 	std::vector<std::string> faces =
 	{
-		"D:/GL/SkyBox/right.jpg",
-		"D:/GL/SkyBox/left.jpg",
-		"D:/GL/SkyBox/top.jpg",
-		"D:/GL/SkyBox/bottom.jpg",
-		"D:/GL/SkyBox/front.jpg",
-		"D:/GL/SkyBox/back.jpg"
+		"D:/GL/SkyBox/right.png",
+		"D:/GL/SkyBox/left.png",
+		"D:/GL/SkyBox/top.png",
+		"D:/GL/SkyBox/bottom.png",
+		"D:/GL/SkyBox/front.png",
+		"D:/GL/SkyBox/back.png"
 
 	};
 	unsigned int SkyBox = LoadSkyBox(faces);
@@ -148,6 +148,8 @@ int main() {
 		glm::mat4 PlanetModel(1.0f);
 		float Orbit = 3.0f;
 		PlanetModel = glm::translate(PlanetModel, glm::vec3(0.0f, 0.0f, -3.0f));
+		float semi_major_axis = 10.0f;
+		float semi_minor_axis = 7.0f;
 		PlanetModel = glm::rotate(PlanetModel, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
 		PlanetModel = glm::translate(PlanetModel, glm::vec3(Orbit, 0.0f, 0.0f));
 		PlanetModel = glm::scale(PlanetModel, glm::vec3(0.2f));

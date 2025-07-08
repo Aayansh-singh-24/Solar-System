@@ -27,6 +27,15 @@ Mesh Process_Mesh(aiMesh* mesh)
 			);
 		}
 
+		if (mesh->mTextureCoords[0])
+		{
+			vertex.TexCoords = glm::vec2
+			(
+				mesh->mTextureCoords[0][i].x,
+				mesh->mTextureCoords[0][i].y
+			);
+		}
+
 		Processed_mesh.vertices.push_back(vertex);
 	}
 
@@ -66,6 +75,11 @@ Mesh Process_Mesh(aiMesh* mesh)
 	//For Normal--
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
 	glEnableVertexAttribArray(1);
+
+	//For Texture--
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+	glEnableVertexAttribArray(2);
+
 
 	glBindVertexArray(0); // for unbinding VAO 
 
