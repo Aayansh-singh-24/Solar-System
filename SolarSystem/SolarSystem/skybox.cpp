@@ -5,8 +5,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include<STB/stb_image.h>
-
-#include"skybox.h"
+#include"Shader.h"
 
 char const* SkyBoxVertexSource = R"(
 #version 330 core
@@ -169,9 +168,36 @@ unsigned int LoadSkyBox(std::vector<std::string> faces)
 
     return textureID;
 
-  
 }
 
 
+unsigned int SunTextureLoader()
+{
+    unsigned int textureID0;
+    glGenTextures(1, &textureID0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureID0);
 
+    //Load-image::
+    int width, height, nrChannels;
+    unsigned char* SunTexture = stbi_load("D:/GL/Models/sun/suncyl1.jpg", &width, &height, &nrChannels, 0);
+    if (SunTexture)
+    {
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, SunTexture);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed! to load Sun Texture " << std::endl;
+    }
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(SunTexture);
+    return textureID0;
+}
 

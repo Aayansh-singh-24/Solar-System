@@ -118,3 +118,41 @@ std::vector<Mesh> LoadModel(std::string path)
 	processNode(scene->mRootNode);
 	return meshes;
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//<-------------------------------------------------------------------Sun-Configuration-----------------------------------------------------------------
+
+//Mesh Sun_Processed_Mesh(aiMesh* mesh)
+//{
+//	Mesh Processed_Mesh;
+//	//Vertex::
+//	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+//	{
+//		SunVertex vertex;
+//		vertex.Position = glm::vec3
+//		(
+//			mesh->mVertices[i].x,
+//			mesh->mVertices[i].y,
+//			mesh->mVertices[i].z
+//		);
+//
+//		//Normals
+//		if (mesh->HasNormals())
+//		{
+//			vertex.Normal = glm::vec3
+//			(
+//				mesh->mNormals[i].x,
+//				mesh->mNormals[i].y,
+//				mesh->mNormals[i].z
+//			);
+//		}
+//
+//		//Texture
+//		if (mesh->mTextureCoords[0])
+//		{
+//			vertex.Texture =
+//		}
+//	}
+//}

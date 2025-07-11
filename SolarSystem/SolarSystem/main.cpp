@@ -13,6 +13,7 @@
 #include"skybox.h"
 
 
+
 int width = 900;
 int height = 900;
 char name[100] = "Solar System";
@@ -60,18 +61,19 @@ int main() {
 	//<---------------------------------------------------------------Dependecies------------------------------------------>
 	// Shaders::
 	unsigned int SunShaderProgram = SunShaderCompilation();
-	unsigned int PlanetunShaderProgram = PalnetShaderCompilation();
+	unsigned int PlanetShaderProgram = PalnetShaderCompilation();
 	// Camera::
 	auto Camera = GetCamera();
 	// Sky-Box::
 	unsigned int SkyVAO = Buffer_setUp();
 	unsigned int SkyShaderProgram = SkyBoxShaderProgram();
-
+	//Sun-Texture
+	unsigned int SunTex = SunTextureLoader();
 
 
 
 	//<--------------------------------------------------------Model-Loading------------------------------------------------------>
-	std::vector<Mesh> myModel = LoadModel("D:/GL/Models/dummy_model.obj");
+	std::vector<Mesh> myModel = LoadModel("D:/GL/Models/Sun/sun.fbx");
 
 	// loading checkup::
 	if (myModel.empty()) {
@@ -95,7 +97,7 @@ int main() {
 
 	//<------------------------------------------Planet-Configuration-------------------------------------->
 
-	glUseProgram(PlanetunShaderProgram);
+	glUseProgram(PlanetShaderProgram);
 
 	//Light Properties:--
 	glm::vec3 lightColor;
@@ -105,22 +107,18 @@ int main() {
 
 	glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // decrease the influence
 	glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
-	glUniform3fv(glad_glGetUniformLocation(PlanetunShaderProgram, "light.ambient"), 1, glm::value_ptr(ambientColor));
-	glUniform3fv(glad_glGetUniformLocation(PlanetunShaderProgram, "light.diffuse"), 1, glm::value_ptr(diffuseColor));
-	glUniform3fv(glad_glGetUniformLocation(PlanetunShaderProgram, "light.specular"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.ambient"), 1, glm::value_ptr(ambientColor));
+	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.diffuse"), 1, glm::value_ptr(diffuseColor));
+	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.specular"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
 
 
 	// material properties:--
-	glUniform3fv(glad_glGetUniformLocation(PlanetunShaderProgram, "material.ambient"), 1, glm::value_ptr(glm::vec3(1.0f, 0.5f, 0.31f)));
-	glUniform3fv(glad_glGetUniformLocation(PlanetunShaderProgram, "material.diffuse"), 1, glm::value_ptr(glm::vec3(1.0f, 0.5f, 0.31f)));
-	glUniform3fv(glad_glGetUniformLocation(PlanetunShaderProgram, "material.specular"), 1, glm::value_ptr(glm::vec3(0.5f, 0.5f, 0.5f)));
-	glUniform1f(glad_glGetUniformLocation(PlanetunShaderProgram, "material.shininess"), 32.0f);
+	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.ambient"), 1, glm::value_ptr(glm::vec3(1.0f, 0.5f, 0.31f)));
+	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.diffuse"), 1, glm::value_ptr(glm::vec3(1.0f, 0.5f, 0.31f)));
+	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.specular"), 1, glm::value_ptr(glm::vec3(0.5f, 0.5f, 0.5f)));
+	glUniform1f(glad_glGetUniformLocation(PlanetShaderProgram, "material.shininess"), 32.0f);
 
-	glUniform3fv(glGetUniformLocation(PlanetunShaderProgram, "viewPos"), 1, glm::value_ptr(std::get<0>(Camera)));
-
-
-
-	
+	glUniform3fv(glGetUniformLocation(PlanetShaderProgram, "viewPos"), 1, glm::value_ptr(std::get<0>(Camera)));
 
 
 	//-----------------------------------------------------Render Loop-----------------------------------------------------------
@@ -143,27 +141,52 @@ int main() {
 		glm::mat4 projection = glm::perspective(glm::radians(90.0f), 3.0f / 1.0f, 0.5f, 100.0f);
 
 
-		glUseProgram(PlanetunShaderProgram); 
+		glUseProgram(PlanetShaderProgram); 
 		//Model:--
 		glm::mat4 PlanetModel(1.0f);
 		float Orbit = 3.0f;
-		PlanetModel = glm::translate(PlanetModel, glm::vec3(0.0f, 0.0f, -3.0f));
-		float semi_major_axis = 10.0f;
-		float semi_minor_axis = 7.0f;
-		PlanetModel = glm::rotate(PlanetModel, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
-		PlanetModel = glm::translate(PlanetModel, glm::vec3(Orbit, 0.0f, 0.0f));
-		PlanetModel = glm::scale(PlanetModel, glm::vec3(0.2f));
+		//PlanetModel = glm::translate(PlanetModel, glm::vec3(0.0f, 0.0f, -3.0f));
+
+
+
+		//---------------------------------------------------------------------------------------------------------------------
+		//---------------------------------------------------------------------------------------------------------------------
+
+		/*
+			"Generally, orbits are simulated using Kepler's laws."
+		*/
+
+		float semi_major_axis = 35.0f;
+		float semi_minnor_axis = 20.0f;
+
+		float theta = glfwGetTime() * Orbit;
+
+		float focus = sqrt(pow(semi_major_axis, 2) - pow(semi_minnor_axis, 2));
+
+		float x_axis = semi_major_axis * cos(theta);
+		//x_axis = x_axis - focus;
+		float z_axis = semi_minnor_axis * sin(theta);
+
+		// Translate whole orbit to place focus (sun) at (0, 0, -3)
+		glm::vec3 orbitOffset = glm::vec3(-focus, 0.0f, -3.0f);
+
+		glm::vec3 planetPos = glm::vec3(x_axis, 0.0f, z_axis) + glm::vec3(0.0f, 0.0f, -3.0f);
+		//----------------------------------------------------------------------------------------------------------------------
+		//----------------------------------------------------------------------------------------------------------------------
+		
+		PlanetModel = glm::translate(PlanetModel, planetPos); // Orbit 
+		PlanetModel = glm::scale(PlanetModel, glm::vec3(0.2f)); // size of planets
 
 		glm::vec3 lightPos = glm::vec3(PlanetModel[3]);
 
-		unsigned int PlanetmModelloc = glad_glGetUniformLocation(PlanetunShaderProgram, "model");
+		unsigned int PlanetmModelloc = glad_glGetUniformLocation(PlanetShaderProgram, "model");
 		glUniformMatrix4fv(PlanetmModelloc, 1, GL_FALSE, glm::value_ptr(PlanetModel));
 
 		//View and Projection uniform to LightShaderProgram:--
-		unsigned int PlanetViewloc = glad_glGetUniformLocation(PlanetunShaderProgram, "view");
+		unsigned int PlanetViewloc = glad_glGetUniformLocation(PlanetShaderProgram, "view");
 		glUniformMatrix4fv(PlanetViewloc, 1, GL_FALSE, glm::value_ptr(view));
 
-		unsigned int PlanetProjectionLoc = glad_glGetUniformLocation(PlanetunShaderProgram, "projection");
+		unsigned int PlanetProjectionLoc = glad_glGetUniformLocation(PlanetShaderProgram, "projection");
 		glUniformMatrix4fv(PlanetProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		// Draw Planet
@@ -175,8 +198,8 @@ int main() {
 			glBindVertexArray(0);
 		}
 
-		glUseProgram(PlanetunShaderProgram);
-		glUniform3fv(glad_glGetUniformLocation(PlanetunShaderProgram, "light.position"), 1, glm::value_ptr(lightPos));
+		glUseProgram(PlanetShaderProgram);
+		glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.position"), 1, glm::value_ptr(lightPos));
 
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
@@ -198,6 +221,10 @@ int main() {
 		glUniformMatrix4fv(SunProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		//Draw Object:
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, SunTex);
+		glUniform1i(glGetUniformLocation(SunShaderProgram, "tex"),0);
 		for (size_t i = 0; i < myModel.size(); i++)
 		{
 			Mesh& mesh = myModel[i];
@@ -205,9 +232,7 @@ int main() {
 			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 			glBindVertexArray(0);
 		}
-
-
-
+		
 		//SkyBox-Setup::
 		glm::mat4 viewSky = glm::mat4(glm::mat3(view));
 		glDepthFunc(GL_LEQUAL);

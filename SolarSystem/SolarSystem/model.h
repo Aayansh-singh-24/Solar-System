@@ -11,6 +11,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+
 //Vertex-Structure::
 struct Vertex
 {
@@ -25,6 +26,21 @@ struct Mesh
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	unsigned int VAO, VBO, EBO;
+};
+
+//Sun-Dependecies::
+struct SunVertex
+{
+	glm::vec3 Position;
+	glm::vec3 Normal;
+	glm::vec2 Texture;
+};
+
+struct SunMesh
+{
+	std::vector<SunVertex> vertices;
+	std::vector<unsigned int> indices;
+	unsigned int VAO, VBO, VEO;
 };
 
 //Function::
