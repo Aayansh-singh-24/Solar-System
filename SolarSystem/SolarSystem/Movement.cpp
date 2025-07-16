@@ -20,7 +20,7 @@ std::tuple<glm::vec3&, glm::vec3&, glm::vec3&> GetCamera()
 
 void KeyboardInput(GLFWwindow* window , float deltaTime)
 {
-    float CameraSpeed = 0.005f;
+    float CameraSpeed = 0.05f;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);

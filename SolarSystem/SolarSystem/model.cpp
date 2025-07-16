@@ -10,6 +10,7 @@ Mesh Process_Mesh(aiMesh* mesh)
 	for (int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
+		//Position of vertices
 		vertex.Position = glm::vec3
 		(
 			mesh->mVertices[i].x,
@@ -27,6 +28,7 @@ Mesh Process_Mesh(aiMesh* mesh)
 			);
 		}
 
+		//Texture
 		if (mesh->mTextureCoords[0])
 		{
 			vertex.TexCoords = glm::vec2
@@ -35,6 +37,20 @@ Mesh Process_Mesh(aiMesh* mesh)
 				mesh->mTextureCoords[0][i].y
 			);
 		}
+		// Print UVs for debugging
+		if ((vertex.TexCoords.x || vertex.TexCoords.y) > 1)
+		{
+			std::cout << "Error in UV-Mapping" << std::endl;
+			break;
+		}
+		else
+		{
+			std::cout << "Vertex " << i << " UV: ("
+				<< vertex.TexCoords.x << ", "
+				<< vertex.TexCoords.y << ")" << std::endl;
+		}
+
+
 
 		Processed_mesh.vertices.push_back(vertex);
 	}
@@ -93,7 +109,7 @@ std::vector<Mesh> LoadModel(std::string path)
 
 	//Assimp Impoter-Setup:--
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenNormals);
+	const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate |aiProcess_FlipUVs | aiProcess_GenNormals);
 
 	//Check scene is Sucessfully load or not::
 	if (!scene || (scene->mFlags && AI_SCENE_FLAGS_NON_VERBOSE_FORMAT) || !scene->mRootNode)
@@ -118,41 +134,3 @@ std::vector<Mesh> LoadModel(std::string path)
 	processNode(scene->mRootNode);
 	return meshes;
 }
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------------------------------------
-
-//<-------------------------------------------------------------------Sun-Configuration-----------------------------------------------------------------
-
-//Mesh Sun_Processed_Mesh(aiMesh* mesh)
-//{
-//	Mesh Processed_Mesh;
-//	//Vertex::
-//	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-//	{
-//		SunVertex vertex;
-//		vertex.Position = glm::vec3
-//		(
-//			mesh->mVertices[i].x,
-//			mesh->mVertices[i].y,
-//			mesh->mVertices[i].z
-//		);
-//
-//		//Normals
-//		if (mesh->HasNormals())
-//		{
-//			vertex.Normal = glm::vec3
-//			(
-//				mesh->mNormals[i].x,
-//				mesh->mNormals[i].y,
-//				mesh->mNormals[i].z
-//			);
-//		}
-//
-//		//Texture
-//		if (mesh->mTextureCoords[0])
-//		{
-//			vertex.Texture =
-//		}
-//	}
-//}

@@ -1,7 +1,10 @@
 #include<glad/glad.h>
+#include<GLFW/glfw3.h>
+
 #include<iostream>
 #include<tuple>
-#include<GLFW/glfw3.h>
+#include<chrono>
+#include<iomanip>
 
 #include<glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,8 +17,8 @@
 
 
 
-int width = 900;
-int height = 900;
+int width = 1024;
+int height = 768;
 char name[100] = "Solar System";
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -23,8 +26,36 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
+//<-----------------------------------------------------------------FPS-COUNTER--------------------------------------------------------------->
+// Function to calculate and display FPS
+void calculateAndDisplayFPS(float& lastTime, int& frameCount, float& fps) {
+	// Get current time
+	static auto startTime = std::chrono::high_resolution_clock::now();
+	auto currentTime = std::chrono::high_resolution_clock::now();
+
+	// Calculate time difference
+	float timeDifference = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	// Calculate FPS
+	frameCount++;
+	if (timeDifference >= 1.0f) {
+		fps = static_cast<float>(frameCount) / timeDifference;
+		startTime = currentTime;
+		frameCount = 0;
+	}
+
+	// Display FPS (example using std::cout)
+	std::cout << "FPS: " << std::fixed << std::setprecision(2) << fps << std::endl;
+}
+
+
 
 int main() {
+
+	//FPS-Counts::
+	int frameCount = 0;
+	float fps = 0.0f;
+	float lastTime = 0.0f;
 	
 	// Window formation:-
 	glfwInit();
@@ -69,11 +100,15 @@ int main() {
 	unsigned int SkyShaderProgram = SkyBoxShaderProgram();
 	//Sun-Texture
 	unsigned int SunTex = SunTextureLoader();
+	//Earth-Texture
+	auto EarthTexture = EarthTextureLoader();
+
 
 
 
 	//<--------------------------------------------------------Model-Loading------------------------------------------------------>
 	std::vector<Mesh> myModel = LoadModel("D:/GL/Models/Sun/sun.fbx");
+	std::vector<Mesh> earthModel = LoadModel("D:/GL/Models/Earth/earth.fbx");
 
 	// loading checkup::
 	if (myModel.empty()) {
@@ -101,21 +136,32 @@ int main() {
 
 	//Light Properties:--
 	glm::vec3 lightColor;
-	lightColor.x = 0.678f;
-	lightColor.y = 0.847f;
-	lightColor.z = 0.902f;
-
+	lightColor.x = 0.0f;     
+	lightColor.y = 0.2f;     
+	lightColor.z = 0.6f;  
+	
 	glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // decrease the influence
 	glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
 	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.ambient"), 1, glm::value_ptr(ambientColor));
-	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.diffuse"), 1, glm::value_ptr(diffuseColor));
+	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.diffuse"), 1, glm::value_ptr(glm::vec3(0.8f,0.8f,0.6f)));
 	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.specular"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
 
 
 	// material properties:--
-	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.ambient"), 1, glm::value_ptr(glm::vec3(1.0f, 0.5f, 0.31f)));
-	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.diffuse"), 1, glm::value_ptr(glm::vec3(1.0f, 0.5f, 0.31f)));
-	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.specular"), 1, glm::value_ptr(glm::vec3(0.5f, 0.5f, 0.5f)));
+	glUseProgram(PlanetShaderProgram);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, (EarthTexture));
+	glUniform1i(glGetUniformLocation(PlanetShaderProgram, "material.diffuse_tex"), 0);
+
+	//glUseProgram(PlanetShaderProgram);
+	//glActiveTexture(GL_TEXTURE1);
+	//glBindTexture(GL_TEXTURE_2D, std::get<1>(EarthTexture));
+	//glUniform1i(glGetUniformLocation(PlanetShaderProgram, "cloudtexture"), 1);
+
+
+	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.ambient"), 1, glm::value_ptr(glm::vec3(1.0f)));
+	//glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.diffuse"), 1, glm::value_ptr(glm::vec3( 0.2f,0.4f, 0.6f)));
+	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.specular"), 1, glm::value_ptr(glm::vec3(0.5f)));
 	glUniform1f(glad_glGetUniformLocation(PlanetShaderProgram, "material.shininess"), 32.0f);
 
 	glUniform3fv(glGetUniformLocation(PlanetShaderProgram, "viewPos"), 1, glm::value_ptr(std::get<0>(Camera)));
@@ -138,17 +184,17 @@ int main() {
 		glm::vec3 CameraTarget = std::get<0>(Camera) + std::get<1>(Camera);
 		glm::mat4 view = glm::lookAt(std::get<0>(Camera), CameraTarget, std::get<2>(Camera));
 
-		glm::mat4 projection = glm::perspective(glm::radians(90.0f), 3.0f / 1.0f, 0.5f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)width / (float)height, 0.5f, 100.0f);
 
 
 		glUseProgram(PlanetShaderProgram); 
 		//Model:--
 		glm::mat4 PlanetModel(1.0f);
+
 		float Orbit = 3.0f;
 		//PlanetModel = glm::translate(PlanetModel, glm::vec3(0.0f, 0.0f, -3.0f));
 
-
-
+		//calculateAndDisplayFPS(lastTime, frameCount, fps);
 		//---------------------------------------------------------------------------------------------------------------------
 		//---------------------------------------------------------------------------------------------------------------------
 
@@ -159,7 +205,8 @@ int main() {
 		float semi_major_axis = 35.0f;
 		float semi_minnor_axis = 20.0f;
 
-		float theta = glfwGetTime() * Orbit;
+		//float theta = glfwGetTime() * Orbit;
+		float theta =  Orbit;
 
 		float focus = sqrt(pow(semi_major_axis, 2) - pow(semi_minnor_axis, 2));
 
@@ -189,10 +236,15 @@ int main() {
 		unsigned int PlanetProjectionLoc = glad_glGetUniformLocation(PlanetShaderProgram, "projection");
 		glUniformMatrix4fv(PlanetProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
+		//Binding of texture::
+		glUseProgram(PlanetShaderProgram);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, EarthTexture);
+
 		// Draw Planet
-		for (size_t i = 0; i < myModel.size(); i++)
+		for (size_t i = 0; i < earthModel.size(); i++)
 		{
-			Mesh& mesh = myModel[i];
+			Mesh& mesh = earthModel[i];
 			glBindVertexArray(mesh.VAO);
 			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 			glBindVertexArray(0);
@@ -204,7 +256,7 @@ int main() {
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 
-		//<--------------------------------------------------------------Sun-Configuration------------------------->
+		//<--------------------------------------------------------------Sun-Configuration------------------------------------------------->
 
 		glUseProgram(SunShaderProgram);
 		glm::mat4 SunModel = glm::mat4(1.0f);
@@ -233,7 +285,7 @@ int main() {
 			glBindVertexArray(0);
 		}
 		
-		//SkyBox-Setup::
+	//<----------------------------------------------------------------SkyBox-Setup::-------------------------------------------------------------->
 		glm::mat4 viewSky = glm::mat4(glm::mat3(view));
 		glDepthFunc(GL_LEQUAL);
 		glUseProgram(SkyShaderProgram);

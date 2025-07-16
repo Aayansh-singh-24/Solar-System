@@ -43,9 +43,11 @@ const char* PlanetVertex = R"(
 
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec3 aNormal;
+layout(location=2) in vec2 aTexCoords;
 
 out vec3 FragPos;
 out vec3 Normal;
+out vec2 TexCoords;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -56,6 +58,8 @@ void main()
 
 	FragPos = vec3(model * vec4(aPos,1));
 	Normal = mat3(transpose(inverse(model))) * aNormal;
+	TexCoords = aTexCoords;
+
 	gl_Position = projection * view * model * vec4(aPos,1);
 
 }
@@ -64,9 +68,13 @@ void main()
 const char* PlanetFragment = R"(
 #version 330 core
 
+in vec3 FragPos;
+in vec3 Normal;
+in vec2 TexCoords;
+
 struct Material {
 	vec3 ambient;
-	vec3 diffuse;
+	sampler2D diffuse_tex;
 	vec3 specular;
 	float shininess;
 };
@@ -78,8 +86,7 @@ struct Light {
 	vec3 specular;
 };
 
-in vec3 FragPos;
-in vec3 Normal;
+
 
 uniform Material material;
 uniform Light light;
@@ -89,6 +96,8 @@ out vec4 FragColor;
 
 void main()
 {
+
+
 	// Ambient
 	vec3 ambient = light.ambient * material.ambient;
 
@@ -96,7 +105,7 @@ void main()
 	vec3 norm = normalize(Normal);
 	vec3 lightDir = normalize(light.Position - FragPos);
 	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = diff * light.diffuse * material.diffuse;
+	vec3 diffuse = diff * light.diffuse * vec3(texture(material.diffuse_tex , TexCoords));
 
 	// Specular
 	vec3 viewDir = normalize(viewPos - FragPos);
@@ -107,6 +116,7 @@ void main()
 	// Final color
 	vec3 result = ambient + diffuse + specular;
 	FragColor = vec4(result, 1.0);
+	//FragColor = texture(material.diffuse_tex, TexCoords);
 }
 
 )";

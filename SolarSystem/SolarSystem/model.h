@@ -28,20 +28,6 @@ struct Mesh
 	unsigned int VAO, VBO, EBO;
 };
 
-//Sun-Dependecies::
-struct SunVertex
-{
-	glm::vec3 Position;
-	glm::vec3 Normal;
-	glm::vec2 Texture;
-};
-
-struct SunMesh
-{
-	std::vector<SunVertex> vertices;
-	std::vector<unsigned int> indices;
-	unsigned int VAO, VBO, VEO;
-};
 
 //Function::
 std::vector<Mesh> LoadModel(std::string path);
