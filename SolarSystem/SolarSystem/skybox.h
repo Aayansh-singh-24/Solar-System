@@ -10,4 +10,4 @@ unsigned int LoadSkyBox(std::vector<std::string> faces);
 unsigned int  Buffer_setUp();
 unsigned int SkyBoxShaderProgram();
 unsigned int SunTextureLoader();
-unsigned int EarthTextureLoader();
+unsigned int TextureLoader(const char* path);

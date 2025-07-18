@@ -128,8 +128,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\GL\Dependency\bin\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib .;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\GL\Dependency\bin\opanAL;D:\GL\Dependency\bin\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib .;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -137,6 +137,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="Movement.cpp" />
+    <ClCompile Include="planet.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="skybox.cpp" />
   </ItemGroup>
@@ -144,6 +145,7 @@
     <ClInclude Include="Header.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="Movement.h" />
+    <ClInclude Include="planet.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="skybox.h" />
   </ItemGroup>

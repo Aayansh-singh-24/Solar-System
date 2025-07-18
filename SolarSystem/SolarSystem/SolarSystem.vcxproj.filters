@@ -31,6 +31,9 @@
     <Filter Include="src\SkyBox">
       <UniqueIdentifier>{3fac1114-2d94-4bab-910b-ff21a1a798fe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Planets">
+      <UniqueIdentifier>{3ff8c557-3b48-4780-b6d3-191de87c6c2a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -51,6 +54,9 @@
     <ClCompile Include="skybox.cpp">
       <Filter>src\SkyBox</Filter>
     </ClCompile>
+    <ClCompile Include="planet.cpp">
+      <Filter>src\Planets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header.h">
@@ -67,6 +73,9 @@
     </ClInclude>
     <ClInclude Include="skybox.h">
       <Filter>src\SkyBox</Filter>
+    </ClInclude>
+    <ClInclude Include="planet.h">
+      <Filter>src\Planets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

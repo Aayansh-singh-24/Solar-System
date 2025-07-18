@@ -38,7 +38,7 @@ Mesh Process_Mesh(aiMesh* mesh)
 			);
 		}
 		// Print UVs for debugging
-		if ((vertex.TexCoords.x || vertex.TexCoords.y) > 1)
+		/*if ((vertex.TexCoords.x || vertex.TexCoords.y) > 1)
 		{
 			std::cout << "Error in UV-Mapping" << std::endl;
 			break;
@@ -48,7 +48,7 @@ Mesh Process_Mesh(aiMesh* mesh)
 			std::cout << "Vertex " << i << " UV: ("
 				<< vertex.TexCoords.x << ", "
 				<< vertex.TexCoords.y << ")" << std::endl;
-		}
+		}*/
 
 
 

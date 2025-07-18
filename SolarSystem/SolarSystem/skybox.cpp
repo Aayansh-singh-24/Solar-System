@@ -202,7 +202,7 @@ unsigned int SunTextureLoader()
     return textureID0;
 }
 
-unsigned int EarthTextureLoader()
+unsigned int TextureLoader(const char* path)
 {
     int width, height, nrChannels;
     unsigned  char* EarthTexture;
@@ -213,34 +213,7 @@ unsigned int EarthTextureLoader()
     glBindTexture(GL_TEXTURE_2D, textureID0);
 
     //Load-image::
-    EarthTexture = stbi_load("D:/GL/Models/Earth/earth.jpg", &width, &height, &nrChannels, 0);
-    if (EarthTexture)
-    {
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, EarthTexture);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed! to load earth Texture " << std::endl;
-    }
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_image_free(EarthTexture);
-
-    //Second Texture
-    unsigned int textureID1;
-    glGenTextures(1, &textureID1);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textureID1);
-
-    //Load-image::
-    width, height, nrChannels;
-    EarthTexture = stbi_load("D:/GL/Models/Earth/Clouds_bake.png", &width, &height, &nrChannels, 0);
+    EarthTexture = stbi_load(path, &width, &height, &nrChannels, 0);
     if (EarthTexture)
     {
         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
@@ -258,6 +231,7 @@ unsigned int EarthTextureLoader()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_image_free(EarthTexture);
+
 
     return textureID0;
 }

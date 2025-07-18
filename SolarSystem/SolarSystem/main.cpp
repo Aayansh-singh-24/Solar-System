@@ -10,10 +10,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <AL/al.h>
+#include <AL/alc.h>
+
 #include"Shader.h"
 #include"Movement.h"
 #include"model.h"
 #include"skybox.h"
+#include"planet.h"
 
 
 
@@ -52,6 +56,8 @@ void calculateAndDisplayFPS(float& lastTime, int& frameCount, float& fps) {
 
 int main() {
 
+
+
 	//FPS-Counts::
 	int frameCount = 0;
 	float fps = 0.0f;
@@ -89,7 +95,7 @@ int main() {
 
 
 
-	//<---------------------------------------------------------------Dependecies------------------------------------------>
+	//<---------------------------------------------------------------Dependecies---------------------------------------------->
 	// Shaders::
 	unsigned int SunShaderProgram = SunShaderCompilation();
 	unsigned int PlanetShaderProgram = PalnetShaderCompilation();
@@ -100,15 +106,39 @@ int main() {
 	unsigned int SkyShaderProgram = SkyBoxShaderProgram();
 	//Sun-Texture
 	unsigned int SunTex = SunTextureLoader();
-	//Earth-Texture
-	auto EarthTexture = EarthTextureLoader();
 
+
+	//<-----------------------------------------------------------------------Planet-Texture-Dependencies---------------------------------------------------->
+	std::vector<unsigned int> PlanetTexture =
+	{
+		TextureLoader("D:/GL/Texture/mercury.jpg"), //Mercury
+		TextureLoader("D:/GL/Texture/venus.jpg"), //Venus
+		TextureLoader("D:/GL/Texture/earth.jpg"), //Earth
+		TextureLoader("D:/GL/Texture/mars.jpg"), //Mars
+		TextureLoader("D:/GL/Texture/jupiter.jpg"), //Jupitar
+		TextureLoader("D:/GL/Texture/saturn.jpg"), //Saturn
+		TextureLoader("D:/GL/Texture/uranus.jpg"), //Uranus
+		TextureLoader("D:/GL/Texture/neptune.jpg") //Neptune
+	};
+	
+	//Scalling For Realisiam
+	std::vector<float> planetScales =
+	{
+			0.05f, // Mercury
+			0.07f, // Venus
+			0.08f, // Earth
+			0.06f, // Mars
+			0.2f, // Jupiter
+			0.13f, // Saturn
+			0.11f, // Uranus
+			0.10f  // Neptune
+	};
+	
 
 
 
 	//<--------------------------------------------------------Model-Loading------------------------------------------------------>
-	std::vector<Mesh> myModel = LoadModel("D:/GL/Models/Sun/sun.fbx");
-	std::vector<Mesh> earthModel = LoadModel("D:/GL/Models/Earth/earth.fbx");
+	std::vector<Mesh> myModel = LoadModel("D:/GL/Models/model.fbx");
 
 	// loading checkup::
 	if (myModel.empty()) {
@@ -129,8 +159,20 @@ int main() {
 	unsigned int SkyBox = LoadSkyBox(faces);
 
 
+	//<-------------------------------------------------------Planets-Properties----------------------------------------------------------------------------->
+	std::vector<Planet> planets = {
+		{18.0f, 17.5f, 0.6f, 7.0f},   // Mercury
+		{25.0f, 24.0f, 0.5f, 15.0f},  // Venus
+		{33.0f, 32.0f, 0.4f, 20.0f},  // Earth
+		{42.0f, 40.0f, 0.3f, 29.0f},  // Mars
+		{55.0f, 53.0f, 0.25f, 36.0f}, // Jupiter
+		{65.0f, 63.0f, 0.2f, 42.0f},  // Saturn
+		{78.0f, 76.0f, 0.15f, 53.0f}, // Uranus
+		{90.0f, 88.0f, 0.12f, 66.0f}  // Neptune
+	};
 
-	//<------------------------------------------Planet-Configuration-------------------------------------->
+
+	//<------------------------------------------------------------Planet-Configuration----------------------------------------------------------------------------->
 
 	glUseProgram(PlanetShaderProgram);
 
@@ -146,17 +188,6 @@ int main() {
 	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.diffuse"), 1, glm::value_ptr(glm::vec3(0.8f,0.8f,0.6f)));
 	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.specular"), 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
 
-
-	// material properties:--
-	glUseProgram(PlanetShaderProgram);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, (EarthTexture));
-	glUniform1i(glGetUniformLocation(PlanetShaderProgram, "material.diffuse_tex"), 0);
-
-	//glUseProgram(PlanetShaderProgram);
-	//glActiveTexture(GL_TEXTURE1);
-	//glBindTexture(GL_TEXTURE_2D, std::get<1>(EarthTexture));
-	//glUniform1i(glGetUniformLocation(PlanetShaderProgram, "cloudtexture"), 1);
 
 
 	glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "material.ambient"), 1, glm::value_ptr(glm::vec3(1.0f)));
@@ -187,73 +218,54 @@ int main() {
 		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)width / (float)height, 0.5f, 100.0f);
 
 
-		glUseProgram(PlanetShaderProgram); 
-		//Model:--
-		glm::mat4 PlanetModel(1.0f);
-
-		float Orbit = 3.0f;
-		//PlanetModel = glm::translate(PlanetModel, glm::vec3(0.0f, 0.0f, -3.0f));
-
-		//calculateAndDisplayFPS(lastTime, frameCount, fps);
-		//---------------------------------------------------------------------------------------------------------------------
-		//---------------------------------------------------------------------------------------------------------------------
-
-		/*
-			"Generally, orbits are simulated using Kepler's laws."
-		*/
-
-		float semi_major_axis = 35.0f;
-		float semi_minnor_axis = 20.0f;
-
-		//float theta = glfwGetTime() * Orbit;
-		float theta =  Orbit;
-
-		float focus = sqrt(pow(semi_major_axis, 2) - pow(semi_minnor_axis, 2));
-
-		float x_axis = semi_major_axis * cos(theta);
-		//x_axis = x_axis - focus;
-		float z_axis = semi_minnor_axis * sin(theta);
-
-		// Translate whole orbit to place focus (sun) at (0, 0, -3)
-		glm::vec3 orbitOffset = glm::vec3(-focus, 0.0f, -3.0f);
-
-		glm::vec3 planetPos = glm::vec3(x_axis, 0.0f, z_axis) + glm::vec3(0.0f, 0.0f, -3.0f);
-		//----------------------------------------------------------------------------------------------------------------------
-		//----------------------------------------------------------------------------------------------------------------------
-		
-		PlanetModel = glm::translate(PlanetModel, planetPos); // Orbit 
-		PlanetModel = glm::scale(PlanetModel, glm::vec3(0.2f)); // size of planets
-
-		glm::vec3 lightPos = glm::vec3(PlanetModel[3]);
-
-		unsigned int PlanetmModelloc = glad_glGetUniformLocation(PlanetShaderProgram, "model");
-		glUniformMatrix4fv(PlanetmModelloc, 1, GL_FALSE, glm::value_ptr(PlanetModel));
-
-		//View and Projection uniform to LightShaderProgram:--
-		unsigned int PlanetViewloc = glad_glGetUniformLocation(PlanetShaderProgram, "view");
-		glUniformMatrix4fv(PlanetViewloc, 1, GL_FALSE, glm::value_ptr(view));
-
-		unsigned int PlanetProjectionLoc = glad_glGetUniformLocation(PlanetShaderProgram, "projection");
-		glUniformMatrix4fv(PlanetProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-		//Binding of texture::
-		glUseProgram(PlanetShaderProgram);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, EarthTexture);
-
-		// Draw Planet
-		for (size_t i = 0; i < earthModel.size(); i++)
-		{
-			Mesh& mesh = earthModel[i];
-			glBindVertexArray(mesh.VAO);
-			glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-			glBindVertexArray(0);
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//<----------------------------------------------------------Planet-Configure---------------------------------------------->
+		float time = glfwGetTime();
+		for (auto& planet : planets) {
+			updatePlanetPosition(planet, time);
 		}
 
-		glUseProgram(PlanetShaderProgram);
-		glUniform3fv(glad_glGetUniformLocation(PlanetShaderProgram, "light.position"), 1, glm::value_ptr(lightPos));
 
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		glUseProgram(PlanetShaderProgram);
+
+		for (size_t i = 0; i < planets.size(); i++)
+		{
+			const Planet& planet = planets[i];
+
+			// Update planet position
+			updatePlanetPosition(const_cast<Planet&>(planet), glfwGetTime());
+
+			// Calculate position relative to Sun
+			glm::vec3 planetPos = glm::vec3(planet.x, planet.y, planet.z) + glm::vec3(0.0f, 0.0f, -3.0f);
+
+			// Transform (translation + scale)
+			glm::mat4 PlanetModel = glm::translate(glm::mat4(1.0f), planetPos);
+			PlanetModel = glm::scale(PlanetModel, glm::vec3(planetScales[i])); // Different scales per planet
+
+			// Send matrices to shader
+			glUniformMatrix4fv(glGetUniformLocation(PlanetShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(PlanetModel));
+			glUniformMatrix4fv(glGetUniformLocation(PlanetShaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
+			glUniformMatrix4fv(glGetUniformLocation(PlanetShaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+			// Bind the unique planet texture
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, PlanetTexture[i]);
+			glUniform1i(glGetUniformLocation(PlanetShaderProgram, "material.diffuse_tex"), 0);
+
+			// Draw the planet model
+			for (size_t i=0; i<myModel.size(); i++)
+			{
+				Mesh& mesh = myModel[i];
+				glBindVertexArray(mesh.VAO);
+				glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+			}
+		}
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 
 		//<--------------------------------------------------------------Sun-Configuration------------------------------------------------->
@@ -273,7 +285,6 @@ int main() {
 		glUniformMatrix4fv(SunProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		//Draw Object:
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, SunTex);
 		glUniform1i(glGetUniformLocation(SunShaderProgram, "tex"),0);
